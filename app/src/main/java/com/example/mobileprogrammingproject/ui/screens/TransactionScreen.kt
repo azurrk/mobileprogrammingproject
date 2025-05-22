@@ -25,7 +25,7 @@ fun TransactionScreen(
     onAddTransaction: () -> Unit,
     onTransactionClick: (String) -> Unit
 ) {
-    // Sample data
+
     val transactions = remember {
         mutableStateListOf(
             Transaction(
@@ -103,7 +103,7 @@ fun TransactionScreen(
                     .fillMaxWidth()
                     .padding(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
                 Column(
@@ -125,9 +125,9 @@ fun TransactionScreen(
                 }
             }
 
-            // List of transactions
+
             if (transactions.isEmpty()) {
-                // Empty state
+
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -218,7 +218,7 @@ fun DateHeader(date: Date) {
 
 
 
-// Transaction data class (same as before)
+
 data class Transaction(
     val id: String,
     val amount: Double,
