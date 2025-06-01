@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -26,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
+import com.example.mobileprogrammingproject.model.Transaction
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -35,20 +38,6 @@ import java.util.Locale
 
 
 
-@Composable
-@Preview
-fun TransactionItemPreview() {
-    val transaction = Transaction(
-        id = "1",
-        amount = -45.99,
-        description = "Grocery shopping",
-        category = "Food",
-        date = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }.time
-    )
-    TransactionItem(
-        transaction
-    ) { }
-}
 
 @Composable
 fun TransactionItem(
@@ -75,17 +64,9 @@ fun TransactionItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Category icon
-            val icon = when (transaction.category) {
-                "Food" -> Icons.Default.Done
-                "Transportation" -> Icons.Default.Done
-                "Housing" -> Icons.Default.Home
-                "Entertainment" -> Icons.Default.Done
-                "Utilities" -> Icons.Default.Done
-                "Shopping" -> Icons.Default.Done
-                "Health" -> Icons.Default.Done
-                "Education" -> Icons.Default.Done
-                "Income" -> Icons.Default.Done
-                else -> Icons.Default.Done
+            val icon = when (transaction.isExpense) {
+                true -> Icons.Default.KeyboardArrowDown
+                false -> Icons.Default.KeyboardArrowUp
             }
 
             Surface(
@@ -115,7 +96,7 @@ fun TransactionItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = transaction.description,
+                    text = transaction.description.toString(),
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

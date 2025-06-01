@@ -3,7 +3,6 @@ package com.example.mobileprogrammingproject.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import kotlinx.serialization.Serializable
 import java.util.Date
 
 
@@ -25,6 +24,6 @@ data class Transaction(
     val isExpense: Boolean,
     val amount: Double,
     val description: String?,
-    val category: TransactionCategoryEnum,
+    val category: String,
     val date: Date
 )
