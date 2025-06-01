@@ -1,4 +1,3 @@
-import android.widget.Space
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,59 +10,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.mobileprogrammingproject.model.Transaction
+import com.example.mobileprogrammingproject.ui.viewmodel.TransactionViewModel
+import com.example.mobileprogrammingproject.ui.viewmodel.UserViewModel
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionScreen(
-    onAddTransaction: () -> Unit,
-    onTransactionClick: (String) -> Unit
+    userViewModel: UserViewModel,
+    transactionViewModel: TransactionViewModel,
+    onAddTransaction: () -> Unit
 ) {
+    val loggedUser by userViewModel.loggedUser.collectAsState()
+    val transactions by transactionViewModel.transactions.collectAsState()
+    val isLoading by transactionViewModel.isLoading.collectAsState()
 
-    val transactions = remember {
-        mutableStateListOf(
-            Transaction(
-                id = "1",
-                amount = -45.99,
-                description = "Grocery shopping",
-                category = "Food",
-                date = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1) }.time
-            ),
-            Transaction(
-                id = "2",
-                amount = 1250.00,
-                description = "Salary deposit",
-                category = "Income",
-                date = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -3) }.time
-            ),
-            Transaction(
-                id = "3",
-                amount = -35.50,
-                description = "Gas station",
-                category = "Transportation",
-                date = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -3) }.time
-            ),
-            Transaction(
-                id = "4",
-                amount = -12.99,
-                description = "Netflix subscription",
-                category = "Entertainment",
-                date = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -5) }.time
-            ),
-            Transaction(
-                id = "5",
-                amount = -85.00,
-                description = "Electricity bill",
-                category = "Utilities",
-                date = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -7) }.time
-            )
-        )
+    // Load transactions when user changes
+    LaunchedEffect(loggedUser) {
+        loggedUser?.let { user ->
+            transactionViewModel.loadTransactions(user.id)
+        }
     }
 
     // Calculate total balance
@@ -73,15 +45,7 @@ fun TransactionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Transactions") },
-                actions = {
-                    IconButton(onClick = { /* Filter or search functionality */ }) {
-                        Icon(Icons.Default.Create, contentDescription = "Filter")
-                    }
-                    IconButton(onClick = { /* More options */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "More options")
-                    }
-                }
+                title = { Text("Transactions") }
             )
         },
         floatingActionButton = {
@@ -92,97 +56,106 @@ fun TransactionScreen(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-        ) {
-            // Balance card at top
-            Card(
+        if (isLoading) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Current Balance",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = currencyFormatter.format(totalBalance),
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (totalBalance >= 0) Color(0xFF1B5E20) else Color(0xFFB71C1C)
-                    )
-                }
+                CircularProgressIndicator()
             }
-
-
-            if (transactions.isEmpty()) {
-
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+            ) {
+                // Balance card at top
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            Icons.Default.AccountBox,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "No transactions yet",
-                            style = MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center
+                            text = "Current Balance",
+                            style = MaterialTheme.typography.titleMedium
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Add your first transaction by clicking the + button",
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 32.dp)
+                            text = currencyFormatter.format(totalBalance),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (totalBalance >= 0) Color(0xFF1B5E20) else Color(0xFFB71C1C)
                         )
                     }
                 }
-            } else {
-                // Group transactions by date
-                val groupedTransactions = transactions.groupBy { transaction ->
-                    val calendar = Calendar.getInstance()
-                    calendar.time = transaction.date
-                    calendar.set(Calendar.HOUR_OF_DAY, 0)
-                    calendar.set(Calendar.MINUTE, 0)
-                    calendar.set(Calendar.SECOND, 0)
-                    calendar.set(Calendar.MILLISECOND, 0)
-                    calendar.time
-                }
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 88.dp) // Extra padding at bottom for FAB
-                ) {
-                    groupedTransactions.forEach { (date, transactionsForDate) ->
-                        item {
-                            DateHeader(date = date)
-                        }
-
-                        items(transactionsForDate) { transaction ->
-                            TransactionItem(
-                                transaction = transaction,
-                                onClick = { onTransactionClick(transaction.id) }
+                if (transactions.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No transactions yet",
+                                style = MaterialTheme.typography.titleLarge,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Add your first transaction by clicking the + button",
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 32.dp)
+                            )
+                        }
+                    }
+                } else {
+                    // Group transactions by date
+                    val groupedTransactions = transactions.groupBy { transaction ->
+                        val calendar = Calendar.getInstance()
+                        calendar.time = transaction.date
+                        calendar.set(Calendar.HOUR_OF_DAY, 0)
+                        calendar.set(Calendar.MINUTE, 0)
+                        calendar.set(Calendar.SECOND, 0)
+                        calendar.set(Calendar.MILLISECOND, 0)
+                        calendar.time
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 88.dp) // Extra padding at bottom for FAB
+                    ) {
+                        groupedTransactions.forEach { (date, transactionsForDate) ->
+                            item {
+                                DateHeader(date = date)
+                            }
+
+                            items(transactionsForDate) { transaction ->
+                                TransactionItem(
+                                    transaction = transaction,
+                                    onClick = { transactionViewModel.deleteTransaction(transaction) }
+                                )
+                            }
                         }
                     }
                 }
@@ -219,21 +192,10 @@ fun DateHeader(date: Date) {
 
 
 
-data class Transaction(
-    val id: String,
-    val amount: Double,
-    val description: String,
-    val category: String,
-    val date: Date
-)
-
 @Preview(showBackground = true)
 @Composable
-fun TransactionListScreenPreview() {
+fun TransactionScreenPreview() {
     MaterialTheme {
-        TransactionScreen(
-            onAddTransaction = {},
-            onTransactionClick = {}
-        )
+        // Preview with mock data
     }
 }

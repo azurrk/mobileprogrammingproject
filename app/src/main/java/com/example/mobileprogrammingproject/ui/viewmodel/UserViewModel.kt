@@ -31,7 +31,7 @@ class UserViewModel @Inject constructor(
     val error: StateFlow<String?> = _error
 
     private val _isLoading = MutableStateFlow<Boolean>(true)
-    val isLoading: StateFlow<Boolean> = _isLoading;
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
         viewModelScope.launch {
@@ -44,15 +44,17 @@ class UserViewModel @Inject constructor(
         }
     }
 
-
-
-
-    fun register(email: String, password: String) {
+    fun register(email: String, password: String, name: String) {
         viewModelScope.launch {
             try {
-                userRepo.insert(User(email=email, password=password, fullName=""))
+                // Reset previous states
+                _registrationSuccess.value = false
+                _error.value = null
+
+                userRepo.insert(User(email=email, password=password, fullName=name))
                 _registrationSuccess.value = true
             } catch (e: Exception) {
+                _registrationSuccess.value = false
                 _error.value = "Registration failed: ${e.message}"
             }
         }
@@ -60,13 +62,18 @@ class UserViewModel @Inject constructor(
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
-            val user = userRepo.
-            getUserByEmailAndPassword(email = email, password = password);
-            _loginStatus.value = user != null;
-            if (_loginStatus.value == true) {
-                _loggedUser.value = user
-                sessionManager.saveUserId(user!!.id)
-                Log.d("logged", "_loggedUser ${loggedUser.value}")
+            try {
+                _error.value = null
+                val user = userRepo.getUserByEmailAndPassword(email = email, password = password)
+                _loginStatus.value = user != null
+                if (_loginStatus.value == true) {
+                    _loggedUser.value = user
+                    sessionManager.saveUserId(user!!.id)
+                    Log.d("logged", "_loggedUser ${loggedUser.value}")
+                }
+            } catch (e: Exception) {
+                _error.value = "Login failed: ${e.message}"
+                _loginStatus.value = false
             }
         }
     }
@@ -76,7 +83,6 @@ class UserViewModel @Inject constructor(
             sessionManager.clearSession()
             _loginStatus.value = false
             _loggedUser.value = null
-
         }
     }
 
@@ -84,4 +90,18 @@ class UserViewModel @Inject constructor(
         _isLoading.value = false
     }
 
+    // Reset methods to clear states
+    fun resetRegistrationState() {
+        _registrationSuccess.value = false
+        _error.value = null
+    }
+
+    fun resetLoginState() {
+        _loginStatus.value = null
+        _error.value = null
+    }
+
+    fun clearError() {
+        _error.value = null
+    }
 }

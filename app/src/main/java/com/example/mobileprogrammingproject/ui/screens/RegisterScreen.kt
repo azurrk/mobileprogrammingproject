@@ -64,12 +64,30 @@ fun RegisterScreen(userViewModel: UserViewModel, onLoginNav: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf("") }
 
     val scrollState = rememberScrollState()
     val context = LocalContext.current
+
+
+    val registrationSuccess by userViewModel.registrationSuccess.collectAsState()
+    val error by userViewModel.error.collectAsState()
+
+
+    LaunchedEffect(registrationSuccess) {
+        if (registrationSuccess) {
+            Toast.makeText(context, "Registration successful! Now you can log in.", Toast.LENGTH_SHORT).show()
+            onLoginNav()
+        }
+    }
+
+    
+    LaunchedEffect(error) {
+        error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize().background(Color(0xFF1B1B1B)),
@@ -80,7 +98,7 @@ fun RegisterScreen(userViewModel: UserViewModel, onLoginNav: () -> Unit) {
             modifier = Modifier.fillMaxSize().offset(y = 200.dp),
             contentAlignment = Alignment.TopCenter
         ) {
-            Text(text = "WELCOME ROCKET!\n LET US GUIDE YOU.", color = Color.White, fontFamily = FontFamily.Serif)
+            Text(text = "START TRACKING YOUR EXPENSES \n REGISTER", color = Color.White, fontFamily = FontFamily.Serif)
         }
         Column(
             modifier = Modifier
@@ -121,7 +139,6 @@ fun RegisterScreen(userViewModel: UserViewModel, onLoginNav: () -> Unit) {
                 )
             )
 
-            InputField(value = address, onValueChange = { address = it }, label = "Address", icon = Icons.Default.Home)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -133,7 +150,7 @@ fun RegisterScreen(userViewModel: UserViewModel, onLoginNav: () -> Unit) {
             }
             Button(
                 onClick = {
-                    Toast.makeText(context, "You registered successfully!", Toast.LENGTH_SHORT).show()
+                    userViewModel.register(email, password, name = "$firstName $lastName")
                 },
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth(),
@@ -144,6 +161,8 @@ fun RegisterScreen(userViewModel: UserViewModel, onLoginNav: () -> Unit) {
         }
     }
 }
+
+
 
 @Composable
 fun InputField(
