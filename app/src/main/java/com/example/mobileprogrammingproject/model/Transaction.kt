@@ -3,6 +3,7 @@ package com.example.mobileprogrammingproject.model
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 import java.util.Date
 
 

@@ -1,8 +1,10 @@
 package com.example.mobileprogrammingproject.dao
 
+import androidx.room.Dao
 import androidx.room.Query
 import com.example.mobileprogrammingproject.model.User
 
+@Dao
 interface UserDao: BaseDao<User> {
     @Query("SELECT * FROM users WHERE users.email = :email")
     suspend fun getUserByEmail(email: String): User?

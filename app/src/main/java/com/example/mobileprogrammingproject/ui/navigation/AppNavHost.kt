@@ -2,6 +2,7 @@ package com.example.mobileprogrammingproject.ui.navigation
 
 import AddTransactionScreen
 import LoginScreen
+
 import TransactionScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.mobileprogrammingproject.ui.screens.HomeScreen
+import com.example.mobileprogrammingproject.ui.screens.RegisterScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -30,6 +32,10 @@ object Auth
 
 @Serializable
 object Login
+
+@Serializable
+object Register
+
 
 @Serializable
 object Main
@@ -86,25 +92,44 @@ fun AppNavHost(userViewModel: UserViewModel = hiltViewModel()) {
                             navController.navigate(Home) {
                                 popUpTo(Auth) { inclusive = true }
                             }
+                        },
+                        onRegisterNav = {
+                            navController.navigate(Register)
                         }
+                    )
+                }
+
+                composable<Register> {
+                    RegisterScreen(
+                        userViewModel = userViewModel,
+                        onLoginNav = {}
                     )
                 }
             }
 
+
+
             navigation<Main>(startDestination = Home) {
                 composable<Home> {
                     HomeScreen(
-                        onNavigateToTransactions = { navController.navigate(Transaction) },
-                        onNavigateToAddTransaction = { navController.navigate(AddTransaction) }
+
                     )
                 }
 
                 composable<Transaction> {
-                    TransactionScreen()
+                    TransactionScreen(
+                        onAddTransaction = {
+                            navController.navigate(AddTransaction)
+                        },
+                        onTransactionClick = {}
+                    )
                 }
 
                 composable<AddTransaction> {
-                    AddTransactionScreen()
+                    AddTransactionScreen(
+                        onSave = {},
+                        onCancel = {}
+                    )
                 }
             }
         }
