@@ -410,10 +410,3 @@ fun getWeeklyExpenseData(transactions: List<com.example.mobileprogrammingproject
     return weekData.toList()
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    MaterialTheme {
-        // Preview with mock data - you'd need to provide mock ViewModels
-    }
-}
